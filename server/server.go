@@ -1,11 +1,15 @@
 package main
 
 import (
+	"SSLChat/utils"
+	"bufio"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"log"
 	"net"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -67,5 +71,25 @@ func handleRequest(conn net.Conn) {
 	if err != nil {
 		fmt.Printf("Error writing to client: %v\n", err)
 		return
+	}
+	messageChan := make(chan string)
+	go utils.ReadLoop(conn, 1, messageChan)
+
+	// 主线程持续获取用户输入并发送消息
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		//fmt.Print("Enter message (type 'quit' to exit): ")
+		scanner.Scan()
+		text := scanner.Text()
+
+		if strings.ToLower(text) == "quit" {
+			fmt.Println("Exiting...")
+			break
+		}
+
+		_, err := conn.Write([]byte(text))
+		if err != nil {
+			log.Fatalf("server: write: %s", err)
+		}
 	}
 }
