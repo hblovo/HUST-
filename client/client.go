@@ -118,30 +118,32 @@ func main() {
 			fmt.Printf("%d: %s\n", i+1, file)
 		}
 
-		// 提示用户选择文件
-		fmt.Print("Enter the file number to decrypt: ")
-		var index string
-		fmt.Scanln(&index)
+		for {
+			// 提示用户选择文件
+			fmt.Print("[输入查看的聊天记录序号]:")
+			var index string
+			fmt.Scanln(&index)
 
-		// 转换输入的文件序号为整数
-		fileIndex, err := strconv.Atoi(index)
-		if err != nil || fileIndex < 1 || fileIndex > len(files) {
-			log.Fatalf("Invalid file selection\n")
+			// 转换输入的文件序号为整数
+			fileIndex, err := strconv.Atoi(index)
+			if err != nil || fileIndex < 1 || fileIndex > len(files) {
+				log.Fatalf("Invalid file selection\n")
+			}
+
+			// 获取用户选择的文件名
+			selectedFile := files[fileIndex-1]
+			filePath := directory + "/" + selectedFile
+
+			// 加载并解密数据
+			decryptedData, err := utils.LoadEncryptedData(filePath, password)
+			if err != nil {
+				log.Fatalf("Failed to decrypt file: %v\n", err)
+			}
+
+			// 输出解密内容
+			fmt.Println("[聊天记录]:")
+			fmt.Println(decryptedData)
 		}
-
-		// 获取用户选择的文件名
-		selectedFile := files[fileIndex-1]
-		filePath := directory + "/" + selectedFile
-
-		// 加载并解密数据
-		decryptedData, err := utils.LoadEncryptedData(filePath, password)
-		if err != nil {
-			log.Fatalf("Failed to decrypt file: %v\n", err)
-		}
-
-		// 输出解密内容
-		fmt.Println("[聊天记录]:")
-		fmt.Println(decryptedData)
 	} else {
 		fmt.Println("口令错误")
 	}
